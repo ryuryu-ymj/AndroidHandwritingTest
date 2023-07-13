@@ -1,21 +1,15 @@
 package io.github.ryuryu_ymj.handwritingtest
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
-import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 
-class DrawView @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0,
-    defStyleRes: Int = 0,
-) : View(context, attrs, defStyleAttr, defStyleRes) {
+class DrawView(context: Context) : View(context) {
     private lateinit var model: DrawViewModel
-    private var isTouching = false
+    var drawTouchPoints = false
 
     fun setViewModel(model: DrawViewModel) {
         this.model = model
@@ -37,12 +31,15 @@ class DrawView @JvmOverloads constructor(
     */
 
     override fun onDraw(canvas: Canvas) {
-        canvas.drawColor(Color.WHITE)
-        canvas.drawBitmap(model.touchPointsBitmap, 0f, 0f, null)
+//        canvas.drawColor(Color.WHITE)
+        if (drawTouchPoints) {
+            canvas.drawBitmap(model.touchPointsBitmap, 0f, 0f, null)
+        }
         canvas.drawBitmap(model.offScreenBitmap, 0f, 0f, null)
         model.lastStroke?.draw(canvas)
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
 //        Log.d(TAG, "touch event: ${event.eventTime}")
         if (event.getToolType(event.actionIndex) == MotionEvent.TOOL_TYPE_STYLUS) {
@@ -55,7 +52,6 @@ class DrawView @JvmOverloads constructor(
                 }
 
                 MotionEvent.ACTION_MOVE -> {
-                    isTouching = true
                     for (i in 0 until event.historySize) {
                         model.moveTouch(
                             event.getHistoricalX(i),
@@ -74,7 +70,6 @@ class DrawView @JvmOverloads constructor(
                 }
 
                 MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> {
-                    isTouching = false
                     model.endTouch()
                     Log.d("DrawView touch event", "END")
                     invalidate()

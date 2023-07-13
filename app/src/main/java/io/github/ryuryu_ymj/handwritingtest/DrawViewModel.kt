@@ -14,7 +14,7 @@ class DrawViewModel : ViewModel() {
     private lateinit var touchPointsCanvas: Canvas
     private val touchPoints = mutableListOf<PointF>()
     var lastStroke: Stroke? = null; private set
-    private val smoother: StrokeSmoother = WeightedSmoother()
+    private val smoother: StrokeSmoother = DampedSmoother()
     private val pointPaint = Paint().apply {
         color = Color.RED
         style = Paint.Style.STROKE

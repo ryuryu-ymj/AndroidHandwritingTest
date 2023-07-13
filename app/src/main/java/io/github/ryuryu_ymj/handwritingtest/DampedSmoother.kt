@@ -2,7 +2,7 @@ package io.github.ryuryu_ymj.handwritingtest
 
 import android.util.Log
 
-class WeightedSmoother : StrokeSmoother {
+class DampedSmoother : StrokeSmoother {
     private var touchX = 0f
     private var touchY = 0f
     private var nibX = 0f
