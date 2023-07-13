@@ -1,7 +1,6 @@
 package io.github.ryuryu_ymj.handwritingtest
 
-import android.graphics.PointF
-import kotlin.math.hypot
+import android.util.Log
 
 class WeightedSmoother : StrokeSmoother {
     private var touchX = 0f
@@ -12,8 +11,6 @@ class WeightedSmoother : StrokeSmoother {
     private var nibDY = 0f
     private var time = 0L
 
-    private var points = mutableListOf<PointF>()
-
     override fun beginTouch(stroke: Stroke, x: Float, y: Float, t: Long) {
         touchX = x
         touchY = y
@@ -23,31 +20,27 @@ class WeightedSmoother : StrokeSmoother {
         nibDY = 0f
         time = t
         stroke.begin(x, y)
-
-        points.add(PointF(x, y))
     }
 
     override fun moveTouch(stroke: Stroke, x: Float, y: Float, t: Long) {
+        if (t - time <= 0) return
+
         touchX = x
         touchY = y
-        animateStroke(stroke, t)
-    }
-
-    override fun animateStroke(stroke: Stroke, t: Long): Boolean {
-        val omega = 0.01f
+        val omega = 0.09f
         val n = 10
+        val dt = (t - time).coerceAtMost(1000 / 60).toFloat() / n
         repeat(n) {
-            val dt = (t - time).toFloat() / n
-            nibDX -= ((touchX - nibX) * omega * omega + nibDX * omega * 2) * dt
-            nibDY -= ((touchY - nibY) * omega * omega + nibDY * omega * 2) * dt
+            nibDX -= ((nibX - touchX) * omega * omega + nibDX * omega * 2) * dt
+            nibDY -= ((nibY - touchY) * omega * omega + nibDY * omega * 2) * dt
             nibX += nibDX * dt
             nibY += nibDY * dt
-//            Log.d(TAG, "$t, $dt, $touchX, $touchY, $nibX, $nibY, $nibDX, $nibDY")
+            Log.d(TAG, "$t, $dt, $touchX, $touchY, $nibX, $nibY, $nibDX, $nibDY")
         }
 
         stroke.extend(nibX, nibY)
-        points.add(PointF(touchX, touchY))
-        return hypot(nibX - touchX, nibY - touchY) > 10
+//        Log.d(TAG, "${t - time}")
+        time = t
     }
 
     override fun endTouch(stroke: Stroke) {

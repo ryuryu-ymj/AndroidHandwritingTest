@@ -26,13 +26,15 @@ class DrawView @JvmOverloads constructor(
         model.setCanvasSize(w, h)
     }
 
-    override fun computeScroll() {
-        val t = System.currentTimeMillis()
-        if (isTouching && model.animateStroke(t)) {
-            postInvalidateOnAnimation()
+    /*
+        override fun computeScroll() {
+            val t = SystemClock.uptimeMillis()
+            if (isTouching && model.animateStroke(t)) {
+                postInvalidateOnAnimation()
+            }
+            Log.d(TAG, "DrawView compute scroll: $t")
         }
-//        Log.d(TAG, "compute scroll")
-    }
+    */
 
     override fun onDraw(canvas: Canvas) {
         canvas.drawColor(Color.WHITE)
@@ -42,7 +44,7 @@ class DrawView @JvmOverloads constructor(
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        Log.d(TAG, "touch event: ${event.action}")
+//        Log.d(TAG, "touch event: ${event.eventTime}")
         if (event.getToolType(event.actionIndex) == MotionEvent.TOOL_TYPE_STYLUS) {
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {

@@ -10,7 +10,7 @@ class Stroke {
     private val pointPaint = Paint().apply {
         color = Color.BLUE
         style = Paint.Style.STROKE
-        strokeWidth = 6f
+        strokeWidth = 3f
         isAntiAlias = true
     }
 

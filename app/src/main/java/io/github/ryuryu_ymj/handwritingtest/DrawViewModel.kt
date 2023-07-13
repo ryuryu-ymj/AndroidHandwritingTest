@@ -18,7 +18,7 @@ class DrawViewModel : ViewModel() {
     private val pointPaint = Paint().apply {
         color = Color.RED
         style = Paint.Style.STROKE
-        strokeWidth = 6f
+        strokeWidth = 3f
         isAntiAlias = true
     }
 
@@ -43,12 +43,6 @@ class DrawViewModel : ViewModel() {
         lastStroke?.let {
             smoother.moveTouch(it, x, y, t)
         }
-    }
-
-    fun animateStroke(t: Long): Boolean {
-        return lastStroke?.let {
-            smoother.animateStroke(it, t)
-        } ?: false
     }
 
     fun endTouch() {
