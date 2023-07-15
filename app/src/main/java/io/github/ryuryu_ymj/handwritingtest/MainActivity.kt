@@ -24,56 +24,48 @@ import io.github.ryuryu_ymj.handwritingtest.ui.theme.HandwritingTestTheme
 const val TAG = "MyLog"
 
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            HandwritingTestTheme {
-                var drawTouchPoints by remember { mutableStateOf(true) }
-                Column(Modifier.fillMaxSize()) {
-                    Row {
-                        Option(text = "touch points",
-                            checked = drawTouchPoints,
-                            onToggle = { drawTouchPoints = !drawTouchPoints })
-                    }
-                    Text(text = "text")
-                    ComposableDrawSurfaceView(drawTouchPoints)
-                }
-            }
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setContent {
+      HandwritingTestTheme {
+        var drawTouchPoints by remember { mutableStateOf(true) }
+        Column(Modifier.fillMaxSize()) {
+          Row {
+            Option(
+                text = "touch points",
+                checked = drawTouchPoints,
+                onToggle = { drawTouchPoints = !drawTouchPoints })
+          }
+          Text(text = "text")
+          ComposableDrawSurfaceView(drawTouchPoints)
         }
+      }
     }
+  }
 }
 
 @Composable
 fun ComposableDrawSurfaceView(drawTouchPoints: Boolean, model: DrawViewModel = viewModel()) {
-    AndroidView(
-        modifier = Modifier.fillMaxSize(),
-        factory = { context ->
-            DrawView(context)
-        },
-        // update is called after factory and before surfaceCreated
-        update = { view ->
-            view.setViewModel(model)
-            view.drawTouchPoints = drawTouchPoints
-        })
+  AndroidView(
+      modifier = Modifier.fillMaxSize(),
+      factory = { context -> DrawView(context) },
+      // update is called after factory and before surfaceCreated
+      update = { view ->
+        view.setViewModel(model)
+        view.drawTouchPoints = drawTouchPoints
+      })
 }
 
 @Composable
 fun Option(text: String, checked: Boolean, onToggle: (Boolean) -> Unit) {
-    Row(
-        Modifier
-            .toggleable(
-                value = checked, role = Role.Checkbox, onValueChange = onToggle
-            )
-    ) {
-        Text(text, Modifier.weight(1f))
-        Checkbox(checked = checked, onCheckedChange = null)
-    }
+  Row(Modifier.toggleable(value = checked, role = Role.Checkbox, onValueChange = onToggle)) {
+    Text(text, Modifier.weight(1f))
+    Checkbox(checked = checked, onCheckedChange = null)
+  }
 }
 
 @Preview
 @Composable
 private fun PreviewOption() {
-    HandwritingTestTheme {
-        Option(text = "Option", checked = true, onToggle = {})
-    }
+  HandwritingTestTheme { Option(text = "Option", checked = true, onToggle = {}) }
 }
