@@ -9,6 +9,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import io.github.ryuryu_ymj.handwritingtest.smoother.DampedSmoother
+import io.github.ryuryu_ymj.handwritingtest.smoother.StrokeSmoother
 
 class PaperViewModel : ViewModel() {
   lateinit var offScreenBitmap: Bitmap
@@ -21,7 +23,7 @@ class PaperViewModel : ViewModel() {
   var drawTouchPoints by mutableStateOf(false)
   var lastStroke: Stroke? = null
     private set
-  private val smoother: StrokeSmoother = MovingAverageSmoother() // DampedSmoother()
+  private val smoother: StrokeSmoother = DampedSmoother()
   private val pointPaint =
       Paint().apply {
         color = Color.RED

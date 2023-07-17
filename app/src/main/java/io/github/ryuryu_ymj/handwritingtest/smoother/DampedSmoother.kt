@@ -1,5 +1,6 @@
-package io.github.ryuryu_ymj.handwritingtest
+package io.github.ryuryu_ymj.handwritingtest.smoother
 
+import io.github.ryuryu_ymj.handwritingtest.Stroke
 import kotlin.math.hypot
 import kotlin.math.min
 

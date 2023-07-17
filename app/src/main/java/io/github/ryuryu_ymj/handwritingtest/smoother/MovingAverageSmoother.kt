@@ -1,6 +1,7 @@
-package io.github.ryuryu_ymj.handwritingtest
+package io.github.ryuryu_ymj.handwritingtest.smoother
 
 import android.graphics.PointF
+import io.github.ryuryu_ymj.handwritingtest.Stroke
 
 class MovingAverageSmoother(private val windowSize: Int = 12) : StrokeSmoother {
   private val queue = ArrayDeque<PointF>(windowSize)
