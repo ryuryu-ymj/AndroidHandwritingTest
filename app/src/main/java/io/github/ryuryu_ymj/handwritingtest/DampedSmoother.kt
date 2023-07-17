@@ -1,6 +1,7 @@
 package io.github.ryuryu_ymj.handwritingtest
 
-import android.util.Log
+import kotlin.math.hypot
+import kotlin.math.min
 
 class DampedSmoother : StrokeSmoother {
   private var touchX = 0f
@@ -10,6 +11,7 @@ class DampedSmoother : StrokeSmoother {
   private var nibDX = 0f
   private var nibDY = 0f
   private var time = 0L
+  private val error = 0.1f
 
   override fun beginTouch(stroke: Stroke, x: Float, y: Float, t: Long) {
     touchX = x
@@ -23,27 +25,31 @@ class DampedSmoother : StrokeSmoother {
   }
 
   override fun moveTouch(stroke: Stroke, x: Float, y: Float, t: Long) {
-    if (t - time <= 0) return
-
     touchX = x
     touchY = y
-    val omega = 0.09f
-    val n = 10
-    val dt = (t - time).coerceAtMost(1000 / 60).toFloat() / n
-    repeat(n) {
-      nibDX -= ((nibX - touchX) * omega * omega + nibDX * omega * 2) * dt
-      nibDY -= ((nibY - touchY) * omega * omega + nibDY * omega * 2) * dt
-      nibX += nibDX * dt
-      nibY += nibDY * dt
-      Log.d(TAG, "$t, $dt, $touchX, $touchY, $nibX, $nibY, $nibDX, $nibDY")
+    while (time < t && hypot(nibX - touchX, nibY - touchY) > error) {
+      val dt = min(2, t - time)
+      time += dt
+      moveNibPhysically(dt)
     }
 
     stroke.extend(nibX, nibY)
-    //        Log.d(TAG, "${t - time}")
-    time = t
   }
 
   override fun endTouch(stroke: Stroke) {
+    while (hypot(nibX - touchX, nibY - touchY) > error) {
+      repeat(5) { moveNibPhysically(2) }
+      stroke.extend(nibX, nibY)
+    }
+
     stroke.end()
+  }
+
+  private fun moveNibPhysically(dt: Long) {
+    val omega = 0.1f
+    nibDX -= ((nibX - touchX) * omega * omega + nibDX * omega * 2) * dt
+    nibDY -= ((nibY - touchY) * omega * omega + nibDY * omega * 2) * dt
+    nibX += nibDX * dt
+    nibY += nibDY * dt
   }
 }
