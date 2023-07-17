@@ -18,7 +18,7 @@ class PaperViewModel : ViewModel() {
     private set
   private lateinit var touchPointsCanvas: Canvas
   private val touchPoints = mutableListOf<PointF>()
-  var drawTouchPoints by mutableStateOf(true)
+  var drawTouchPoints by mutableStateOf(false)
   var lastStroke: Stroke? = null
     private set
   private val smoother: StrokeSmoother = DampedSmoother()

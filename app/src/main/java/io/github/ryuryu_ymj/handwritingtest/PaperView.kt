@@ -20,11 +20,11 @@ class PaperView(context: Context) : View(context) {
   }
 
   override fun onDraw(canvas: Canvas) {
+    canvas.drawBitmap(model.offScreenBitmap, 0f, 0f, null)
+    model.lastStroke?.draw(canvas)
     if (model.drawTouchPoints) {
       canvas.drawBitmap(model.touchPointsBitmap, 0f, 0f, null)
     }
-    canvas.drawBitmap(model.offScreenBitmap, 0f, 0f, null)
-    model.lastStroke?.draw(canvas)
   }
 
   @SuppressLint("ClickableViewAccessibility")

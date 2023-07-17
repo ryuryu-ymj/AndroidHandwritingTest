@@ -46,7 +46,7 @@ class DampedSmoother : StrokeSmoother {
   }
 
   private fun moveNibPhysically(dt: Long) {
-    val omega = 0.1f
+    val omega = 0.09f
     nibDX -= ((nibX - touchX) * omega * omega + nibDX * omega * 2) * dt
     nibDY -= ((nibY - touchY) * omega * omega + nibDY * omega * 2) * dt
     nibX += nibDX * dt
