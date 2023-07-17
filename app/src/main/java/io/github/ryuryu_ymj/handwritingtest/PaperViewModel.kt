@@ -21,7 +21,7 @@ class PaperViewModel : ViewModel() {
   var drawTouchPoints by mutableStateOf(false)
   var lastStroke: Stroke? = null
     private set
-  private val smoother: StrokeSmoother = DampedSmoother()
+  private val smoother: StrokeSmoother = MovingAverageSmoother() // DampedSmoother()
   private val pointPaint =
       Paint().apply {
         color = Color.RED
