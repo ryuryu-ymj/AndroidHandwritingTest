@@ -7,11 +7,10 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 
-class DrawView(context: Context) : View(context) {
-  private lateinit var model: DrawViewModel
-  var drawTouchPoints = false
+class PaperView(context: Context) : View(context) {
+  private lateinit var model: PaperViewModel
 
-  fun setViewModel(model: DrawViewModel) {
+  fun setViewModel(model: PaperViewModel) {
     this.model = model
   }
 
@@ -20,19 +19,8 @@ class DrawView(context: Context) : View(context) {
     model.setCanvasSize(w, h)
   }
 
-  /*
-      override fun computeScroll() {
-          val t = SystemClock.uptimeMillis()
-          if (isTouching && model.animateStroke(t)) {
-              postInvalidateOnAnimation()
-          }
-          Log.d(TAG, "DrawView compute scroll: $t")
-      }
-  */
-
   override fun onDraw(canvas: Canvas) {
-    //        canvas.drawColor(Color.WHITE)
-    if (drawTouchPoints) {
+    if (model.drawTouchPoints) {
       canvas.drawBitmap(model.touchPointsBitmap, 0f, 0f, null)
     }
     canvas.drawBitmap(model.offScreenBitmap, 0f, 0f, null)

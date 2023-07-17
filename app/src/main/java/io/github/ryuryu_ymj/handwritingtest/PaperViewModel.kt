@@ -5,9 +5,12 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.PointF
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 
-class DrawViewModel : ViewModel() {
+class PaperViewModel : ViewModel() {
   lateinit var offScreenBitmap: Bitmap
     private set
   private lateinit var offScreenCanvas: Canvas
@@ -15,6 +18,7 @@ class DrawViewModel : ViewModel() {
     private set
   private lateinit var touchPointsCanvas: Canvas
   private val touchPoints = mutableListOf<PointF>()
+  var drawTouchPoints by mutableStateOf(true)
   var lastStroke: Stroke? = null
     private set
   private val smoother: StrokeSmoother = DampedSmoother()

@@ -10,10 +10,6 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,16 +24,17 @@ class MainActivity : ComponentActivity() {
     super.onCreate(savedInstanceState)
     setContent {
       HandwritingTestTheme {
-        var drawTouchPoints by remember { mutableStateOf(true) }
+        //        var drawTouchPoints by remember { mutableStateOf(true) }
+        val model: PaperViewModel = viewModel()
         Column(Modifier.fillMaxSize()) {
           Row {
             Option(
                 text = "touch points",
-                checked = drawTouchPoints,
-                onToggle = { drawTouchPoints = !drawTouchPoints })
+                checked = model.drawTouchPoints,
+                onToggle = { model.drawTouchPoints = !model.drawTouchPoints })
           }
           Text(text = "text")
-          ComposableDrawSurfaceView(drawTouchPoints)
+          ComposableDrawSurfaceView(model)
         }
       }
     }
@@ -45,15 +42,12 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun ComposableDrawSurfaceView(drawTouchPoints: Boolean, model: DrawViewModel = viewModel()) {
+fun ComposableDrawSurfaceView(model: PaperViewModel = viewModel()) {
   AndroidView(
       modifier = Modifier.fillMaxSize(),
-      factory = { context -> DrawView(context) },
+      factory = { context -> PaperView(context) },
       // update is called after factory and before surfaceCreated
-      update = { view ->
-        view.setViewModel(model)
-        view.drawTouchPoints = drawTouchPoints
-      })
+      update = { view -> view.setViewModel(model) })
 }
 
 @Composable
