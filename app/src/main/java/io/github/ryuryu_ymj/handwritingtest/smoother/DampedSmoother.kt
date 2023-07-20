@@ -4,7 +4,7 @@ import io.github.ryuryu_ymj.handwritingtest.Stroke
 import kotlin.math.hypot
 import kotlin.math.min
 
-class DampedSmoother : StrokeSmoother {
+class DampedSmoother(private val omega: Float = 0.09f) : StrokeSmoother {
   private var touchX = 0f
   private var touchY = 0f
   private var nibX = 0f
@@ -47,7 +47,6 @@ class DampedSmoother : StrokeSmoother {
   }
 
   private fun moveNibPhysically(dt: Long) {
-    val omega = 0.09f
     nibDX -= ((nibX - touchX) * omega * omega + nibDX * omega * 2) * dt
     nibDY -= ((nibY - touchY) * omega * omega + nibDY * omega * 2) * dt
     nibX += nibDX * dt
