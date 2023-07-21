@@ -39,16 +39,16 @@ class PaperViewModel : ViewModel() {
     touchPointsCanvas = Canvas(touchPointsBitmap)
   }
 
-  fun beginTouch(x: Float, y: Float, t: Long) {
+  fun beginTouch(x: Float, y: Float, pressure: Float, time: Long) {
     touchPoints.add(PointF(x, y))
     touchPointsCanvas.drawPoint(x, y, pointPaint)
-    lastStroke = Stroke().also { smoother.beginTouch(it, x, y, t) }
+    lastStroke = Stroke().also { smoother.beginTouch(it, x, y, pressure, time) }
   }
 
-  fun moveTouch(x: Float, y: Float, t: Long) {
+  fun moveTouch(x: Float, y: Float, pressure: Float, time: Long) {
     touchPoints.add(PointF(x, y))
     touchPointsCanvas.drawPoint(x, y, pointPaint)
-    lastStroke?.let { smoother.moveTouch(it, x, y, t) }
+    lastStroke?.let { smoother.moveTouch(it, x, y, pressure, time) }
   }
 
   fun endTouch() {

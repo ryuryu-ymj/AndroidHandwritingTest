@@ -4,61 +4,46 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
-import android.graphics.PointF
-import android.util.Log
 
-class Stroke {
+data class Point(val x: Float, val y: Float, val radius: Float)
+
+class Stroke(private val width: Float = 40f) {
+  private val points = mutableListOf<Point>()
   private val path = Path()
-  private val vertices = mutableListOf<Float>()
-  private val previousPoint = PointF()
   private val paint =
       Paint().apply {
         color = Color.BLUE
-        style = Paint.Style.STROKE
-        strokeWidth = 6f
+        style = Paint.Style.FILL
         isAntiAlias = true
       }
 
-  fun begin(x: Float, y: Float) {
-    previousPoint.set(x, y)
-    path.moveTo(x, y + 400)
+  fun begin(x: Float, y: Float, pressure: Float) {
+    points.add(Point(x, y, pressure * width / 2))
   }
 
-  fun extend(x: Float, y: Float) {
-    var dx = x - previousPoint.x
-    var dy = y - previousPoint.y
+  fun extend(x: Float, y: Float, pressure: Float) {
+    val p1 = points.last()
+    val p2 = Point(x, y, pressure * width / 2)
+    var dx = p2.x - p1.x
+    var dy = p2.y - p1.y
     val dr = kotlin.math.hypot(dx, dy)
     dx /= dr
     dy /= dr
     if (dx.isFinite() && dy.isFinite()) {
-      val radius = 3f
-      vertices.add(previousPoint.x - dy * radius)
-      vertices.add(previousPoint.y + dx * radius)
-      vertices.add(previousPoint.x + dy * radius)
-      vertices.add(previousPoint.y - dx * radius)
-    }
+      path.moveTo(p1.x + dy * p1.radius, p1.y - dx * p1.radius)
+      path.lineTo(p1.x - dy * p1.radius, p1.y + dx * p1.radius)
+      path.lineTo(p2.x - dy * p2.radius, p2.y + dx * p2.radius)
+      path.lineTo(p2.x + dy * p2.radius, p2.y - dx * p2.radius)
+      path.close()
 
-    previousPoint.set(x, y)
-    path.lineTo(x, y + 400)
-    Log.d(TAG, "$dr, $dx, $dy")
+      points.add(p2)
+    }
   }
 
   fun end() {}
 
   fun draw(canvas: Canvas) {
     canvas.drawPath(path, paint)
-    canvas.drawVertices(
-        Canvas.VertexMode.TRIANGLE_STRIP,
-        vertices.size,
-        vertices.toFloatArray(),
-        0,
-        null,
-        0,
-        null,
-        0,
-        null,
-        0,
-        0,
-        paint)
+    for (p in points) canvas.drawCircle(p.x, p.y, p.radius, paint)
   }
 }

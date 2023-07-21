@@ -33,7 +33,7 @@ class PaperView(context: Context) : View(context) {
     if (event.getToolType(event.actionIndex) == MotionEvent.TOOL_TYPE_STYLUS) {
       when (event.actionMasked) {
         MotionEvent.ACTION_DOWN -> {
-          model.beginTouch(event.x, event.y, event.eventTime)
+          model.beginTouch(event.x, event.y, event.pressure, event.eventTime)
           Log.d("DrawView touch event", "DOWN,${event.eventTime},${event.x},${event.y}\n")
           invalidate()
           return true
@@ -41,15 +41,21 @@ class PaperView(context: Context) : View(context) {
         MotionEvent.ACTION_MOVE -> {
           for (i in 0 until event.historySize) {
             model.moveTouch(
-                event.getHistoricalX(i), event.getHistoricalY(i), event.getHistoricalEventTime(i))
+                event.getHistoricalX(i),
+                event.getHistoricalY(i),
+                event.getHistoricalPressure(i),
+                event.getHistoricalEventTime(i))
             val log =
                 "MOVE,${event.getHistoricalEventTime(i)}," +
                     "${event.getHistoricalX(i)}," +
-                    "${event.getHistoricalY(i)}\n"
+                    "${event.getHistoricalY(i)}," +
+                    "${event.getHistoricalPressure(i)}\n"
             Log.d("DrawView touch event", log)
           }
-          model.moveTouch(event.x, event.y, event.eventTime)
-          Log.d("DrawView touch event", "MOVE,${event.eventTime},${event.x},${event.y}\n")
+          model.moveTouch(event.x, event.y, event.pressure, event.eventTime)
+          Log.d(
+              "DrawView touch event",
+              "MOVE,${event.eventTime},${event.x},${event.y},${event.pressure}\n")
           invalidate()
           return true
         }

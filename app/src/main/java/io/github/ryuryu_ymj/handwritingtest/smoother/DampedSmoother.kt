@@ -7,6 +7,7 @@ import kotlin.math.min
 class DampedSmoother(private val omega: Float = 0.09f) : StrokeSmoother {
   private var touchX = 0f
   private var touchY = 0f
+  private var touchPressure = 0f
   private var nibX = 0f
   private var nibY = 0f
   private var nibDX = 0f
@@ -14,33 +15,36 @@ class DampedSmoother(private val omega: Float = 0.09f) : StrokeSmoother {
   private var time = 0L
   private val error = 0.1f
 
-  override fun beginTouch(stroke: Stroke, x: Float, y: Float, t: Long) {
+  override fun beginTouch(stroke: Stroke, x: Float, y: Float, pressure: Float, time: Long) {
     touchX = x
     touchY = y
+    touchPressure = pressure
     nibX = x
     nibY = y
     nibDX = 0f
     nibDY = 0f
-    time = t
-    stroke.begin(x, y)
+    this.time = time
+    stroke.begin(x, y, pressure)
   }
 
-  override fun moveTouch(stroke: Stroke, x: Float, y: Float, t: Long) {
+  override fun moveTouch(stroke: Stroke, x: Float, y: Float, pressure: Float, time: Long) {
     touchX = x
     touchY = y
-    while (time < t && hypot(nibX - touchX, nibY - touchY) > error) {
-      val dt = min(2, t - time)
-      time += dt
+    touchPressure = pressure
+    while (this.time < time && hypot(nibX - touchX, nibY - touchY) > error) {
+      val dt = min(2, time - this.time)
+      this.time += dt
       moveNibPhysically(dt)
     }
 
-    stroke.extend(nibX, nibY)
+    stroke.extend(nibX, nibY, pressure)
   }
 
   override fun endTouch(stroke: Stroke) {
     while (hypot(nibX - touchX, nibY - touchY) > error) {
       repeat(5) { moveNibPhysically(2) }
-      stroke.extend(nibX, nibY)
+      touchPressure *= 0.8f
+      stroke.extend(nibX, nibY, touchPressure)
     }
 
     stroke.end()
