@@ -8,6 +8,7 @@ class DampedSmoother(private val omega: Float = 0.09f) : StrokeSmoother {
   private var touchX = 0f
   private var touchY = 0f
   private var touchPressure = 0f
+  private val pressureSmoother = PressureSmoother()
   private var nibX = 0f
   private var nibY = 0f
   private var nibDX = 0f
@@ -24,7 +25,7 @@ class DampedSmoother(private val omega: Float = 0.09f) : StrokeSmoother {
     nibDX = 0f
     nibDY = 0f
     this.time = time
-    stroke.begin(x, y, pressure)
+    stroke.begin(x, y, pressureSmoother.smooth(touchPressure))
   }
 
   override fun moveTouch(stroke: Stroke, x: Float, y: Float, pressure: Float, time: Long) {
@@ -37,14 +38,14 @@ class DampedSmoother(private val omega: Float = 0.09f) : StrokeSmoother {
       moveNibPhysically(dt)
     }
 
-    stroke.extend(nibX, nibY, pressure)
+    stroke.extend(nibX, nibY, pressureSmoother.smooth(touchPressure))
   }
 
   override fun endTouch(stroke: Stroke) {
     while (hypot(nibX - touchX, nibY - touchY) > error) {
       repeat(5) { moveNibPhysically(2) }
-      touchPressure *= 0.8f
-      stroke.extend(nibX, nibY, touchPressure)
+      touchPressure *= 0.6f
+      stroke.extend(nibX, nibY, pressureSmoother.smooth(touchPressure))
     }
 
     stroke.end()

@@ -34,7 +34,9 @@ class PaperView(context: Context) : View(context) {
       when (event.actionMasked) {
         MotionEvent.ACTION_DOWN -> {
           model.beginTouch(event.x, event.y, event.pressure, event.eventTime)
-          Log.d("DrawView touch event", "DOWN,${event.eventTime},${event.x},${event.y}\n")
+          Log.d(
+              "DrawView touch event",
+              "DOWN,${event.eventTime},${event.x},${event.y},${event.pressure}\n")
           invalidate()
           return true
         }

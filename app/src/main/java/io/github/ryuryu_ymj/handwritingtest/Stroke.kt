@@ -4,6 +4,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
+import android.util.Log
 
 data class Point(val x: Float, val y: Float, val radius: Float)
 
@@ -19,6 +20,7 @@ class Stroke(private val width: Float = 40f) {
 
   fun begin(x: Float, y: Float, pressure: Float) {
     points.add(Point(x, y, pressure * width / 2))
+    Log.d(TAG, "BEGIN: $pressure")
   }
 
   fun extend(x: Float, y: Float, pressure: Float) {
@@ -37,6 +39,7 @@ class Stroke(private val width: Float = 40f) {
       path.close()
 
       points.add(p2)
+      Log.d(TAG, "EXTEND: $pressure")
     }
   }
 
