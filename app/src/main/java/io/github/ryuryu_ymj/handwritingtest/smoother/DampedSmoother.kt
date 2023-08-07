@@ -4,7 +4,7 @@ import io.github.ryuryu_ymj.handwritingtest.Pen
 import kotlin.math.hypot
 import kotlin.math.min
 
-class DampedSmoother(private val omega: Float = 0.09f) : TouchSmoother {
+class DampedSmoother : TouchSmoother {
   private var touchX = 0f
   private var touchY = 0f
   private var touchDX = 0f
@@ -30,7 +30,7 @@ class DampedSmoother(private val omega: Float = 0.09f) : TouchSmoother {
   }
 
   override fun moveTouch(pen: Pen, x: Float, y: Float, pressure: Float, time: Long) {
-    val w1 = 0.2f
+    val w1 = 0.5f
     val duration = time - this.time
     val newTouchDX = (x - touchX) / duration
     val newTouchDY = (y - touchY) / duration
@@ -49,28 +49,25 @@ class DampedSmoother(private val omega: Float = 0.09f) : TouchSmoother {
   }
 
   override fun endTouch(pen: Pen) {
-    val firstDst = hypot(nibX - touchX, nibY - touchY)
+    var move = hypot(nibX - touchX, nibY - touchY)
+    val dt = 4
+    while (move > error) {
+      touchX += touchDX * dt
+      touchY += touchDY * dt
+      moveNibPhysically(dt)
+      move -= hypot(nibDX * dt, nibDY * dt)
 
-    //    if (firstDst < 1f) {
-    //      while (moveNibPhysically(12)) {
-    //        pen.move(nibX, nibY, nibPressure)
-    //      }
-    //    } else {
-    //      val nibDR = hypot(nibDX, nibDY)
-    //      nibX += nibDX / nibDR * firstDst
-    //      nibY += nibDY / nibDR * firstDst
-    //      //      val pressure = nibPressure * 0.98f.pow(firstDst.toInt())
-    //      pen.move(nibX, nibY, nibPressure)
-    //    }
+      pen.move(nibX, nibY, nibPressure)
+    }
   }
 
-  private fun moveNibPhysically(duration: Int): Boolean {
+  private fun moveNibPhysically(duration: Int) {
     var timeLeft = duration
-    val omega = 0.05f
+    val omega = 0.055f
     val gamma = 0.45f // damping ratio
     while (timeLeft > 0) {
       val dst = hypot(nibX - touchX, nibY - touchY)
-      if (dst <= error) return false
+      if (dst <= error) break
       val dt = min(4, timeLeft)
       timeLeft -= dt
       nibDX -= ((nibX - touchX) * omega * omega + nibDX * omega * gamma * 2) * dt
@@ -78,6 +75,5 @@ class DampedSmoother(private val omega: Float = 0.09f) : TouchSmoother {
       nibX += nibDX * dt
       nibY += nibDY * dt
     }
-    return true
   }
 }
