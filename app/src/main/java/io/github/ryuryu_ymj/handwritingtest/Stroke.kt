@@ -8,7 +8,7 @@ import android.util.Log
 
 data class Point(val x: Float, val y: Float, val radius: Float)
 
-class Stroke(private val width: Float = 40f) {
+class Stroke {
   private val points = mutableListOf<Point>()
   private val path = Path()
   private val paint =
@@ -18,14 +18,13 @@ class Stroke(private val width: Float = 40f) {
         isAntiAlias = true
       }
 
-  fun begin(x: Float, y: Float, pressure: Float) {
-    points.add(Point(x, y, pressure * width / 2))
-    Log.d(TAG, "BEGIN: $pressure")
+  fun begin(x: Float, y: Float, radius: Float) {
+    points.add(Point(x, y, radius))
   }
 
-  fun extend(x: Float, y: Float, pressure: Float) {
+  fun extend(x: Float, y: Float, radius: Float) {
     val p1 = points.last()
-    val p2 = Point(x, y, pressure * width / 2)
+    val p2 = Point(x, y, radius)
     var dx = p2.x - p1.x
     var dy = p2.y - p1.y
     val dr = kotlin.math.hypot(dx, dy)
@@ -39,7 +38,6 @@ class Stroke(private val width: Float = 40f) {
       path.close()
 
       points.add(p2)
-      Log.d(TAG, "EXTEND: $pressure")
     }
   }
 

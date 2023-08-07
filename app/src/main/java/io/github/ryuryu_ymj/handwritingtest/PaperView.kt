@@ -21,7 +21,7 @@ class PaperView(context: Context) : View(context) {
 
   override fun onDraw(canvas: Canvas) {
     canvas.drawBitmap(model.offScreenBitmap, 0f, 0f, null)
-    model.lastStroke?.draw(canvas)
+    model.pen.draw(canvas)
     if (model.drawTouchPoints) {
       canvas.drawBitmap(model.touchPointsBitmap, 0f, 0f, null)
     }
@@ -54,10 +54,10 @@ class PaperView(context: Context) : View(context) {
                     "${event.getHistoricalPressure(i)}\n"
             Log.d("DrawView touch event", log)
           }
-          model.moveTouch(event.x, event.y, event.pressure, event.eventTime)
-          Log.d(
-              "DrawView touch event",
-              "MOVE,${event.eventTime},${event.x},${event.y},${event.pressure}\n")
+          //          model.moveTouch(event.x, event.y, event.pressure, event.eventTime)
+          //          Log.d(
+          //              "DrawView touch event",
+          //              "MOVE,${event.eventTime},${event.x},${event.y},${event.pressure}\n")
           invalidate()
           return true
         }

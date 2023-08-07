@@ -4,13 +4,12 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.PointF
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import io.github.ryuryu_ymj.handwritingtest.smoother.DampedSmoother
-import io.github.ryuryu_ymj.handwritingtest.smoother.StrokeSmoother
+import io.github.ryuryu_ymj.handwritingtest.smoother.TouchSmoother
 
 class PaperViewModel : ViewModel() {
   lateinit var offScreenBitmap: Bitmap
@@ -19,11 +18,9 @@ class PaperViewModel : ViewModel() {
   lateinit var touchPointsBitmap: Bitmap
     private set
   private lateinit var touchPointsCanvas: Canvas
-  private val touchPoints = mutableListOf<PointF>()
   var drawTouchPoints by mutableStateOf(false)
-  var lastStroke: Stroke? = null
-    private set
-  private val smoother: StrokeSmoother = DampedSmoother()
+  val pen = Pen()
+  private val smoother: TouchSmoother = DampedSmoother()
   private val pointPaint =
       Paint().apply {
         color = Color.RED
@@ -40,20 +37,18 @@ class PaperViewModel : ViewModel() {
   }
 
   fun beginTouch(x: Float, y: Float, pressure: Float, time: Long) {
-    touchPoints.add(PointF(x, y))
     touchPointsCanvas.drawPoint(x, y, pointPaint)
-    lastStroke = Stroke().also { smoother.beginTouch(it, x, y, pressure, time) }
+    smoother.beginTouch(pen, x, y, pressure, time)
   }
 
   fun moveTouch(x: Float, y: Float, pressure: Float, time: Long) {
-    touchPoints.add(PointF(x, y))
     touchPointsCanvas.drawPoint(x, y, pointPaint)
-    lastStroke?.let { smoother.moveTouch(it, x, y, pressure, time) }
+    smoother.moveTouch(pen, x, y, pressure, time)
   }
 
   fun endTouch() {
-    lastStroke?.let { smoother.endTouch(it) }
-    lastStroke?.draw(offScreenCanvas)
-    lastStroke = null
+    smoother.endTouch(pen)
+    pen.draw(offScreenCanvas)
+    pen.end()
   }
 }
