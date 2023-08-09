@@ -27,13 +27,7 @@ class MainActivity : ComponentActivity() {
         //        var drawTouchPoints by remember { mutableStateOf(true) }
         val model: PaperViewModel = viewModel()
         Column(Modifier.fillMaxSize()) {
-          Row {
-            Option(
-                text = "touch points",
-                checked = model.drawTouchPoints,
-                onToggle = { model.drawTouchPoints = !model.drawTouchPoints })
-          }
-          Text(text = "text")
+          Text(text = "Notebook")
           ComposableDrawSurfaceView(model)
         }
       }

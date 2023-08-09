@@ -2,6 +2,7 @@ package io.github.ryuryu_ymj.handwritingtest
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -18,6 +19,9 @@ import androidx.core.view.ViewCompat
 
 class PaperView(context: Context) : View(context) {
   private lateinit var model: PaperViewModel
+  lateinit var offScreenBitmap: Bitmap
+    private set
+  private lateinit var offScreenCanvas: Canvas
 
   private val paint =
       Paint().apply {
@@ -120,6 +124,13 @@ class PaperView(context: Context) : View(context) {
           lastSpan = span
           return true
         }
+
+        override fun onScaleEnd(detector: ScaleGestureDetector) {
+          val w = (paperFrame.width() / currentViewport.width() * width).toInt()
+          val h = (paperFrame.height() / currentViewport.height() * height).toInt()
+          setOffscreenCanvasSize(w, h)
+          ViewCompat.postInvalidateOnAnimation(this@PaperView)
+        }
       }
   private val scaleGestureDetector = ScaleGestureDetector(context, scalaGestureListener)
 
@@ -129,7 +140,6 @@ class PaperView(context: Context) : View(context) {
 
   override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
     super.onSizeChanged(w, h, oldw, oldh)
-    model.setCanvasSize(w, h)
 
     if (oldw == 0 || oldh == 0) {
       setCurrentViewport(0f, 0f, w.toFloat(), h.toFloat())
@@ -141,18 +151,24 @@ class PaperView(context: Context) : View(context) {
           currentViewport.top + currentViewport.height() * h / oldh,
       )
     }
+    setOffscreenCanvasSize(
+        (paperFrame.width() / currentViewport.width() * w).toInt(),
+        (paperFrame.height() / currentViewport.height() * h).toInt())
   }
 
   override fun onDraw(canvas: Canvas) {
+    //    canvas.drawBitmap(
+    //        model.offScreenBitmap,
+    //        -width * currentViewport.left / currentViewport.width(),
+    //        -height * currentViewport.top / currentViewport.height(),
+    //        null)
     val c = canvas.save()
+    canvas.clipRect(0, 0, width, height)
     canvas.scale(width / currentViewport.width(), height / currentViewport.height())
     canvas.translate(-currentViewport.left, -currentViewport.top)
 
-    canvas.drawBitmap(model.offScreenBitmap, 0f, 0f, null)
+    canvas.drawBitmap(offScreenBitmap, null, paperFrame, null)
     model.pen.draw(canvas)
-    if (model.drawTouchPoints) {
-      canvas.drawBitmap(model.touchPointsBitmap, 0f, 0f, null)
-    }
     canvas.drawRect(paperFrame, paint)
 
     canvas.restoreToCount(c)
@@ -196,6 +212,13 @@ class PaperView(context: Context) : View(context) {
         MotionEvent.ACTION_CANCEL,
         MotionEvent.ACTION_UP -> {
           model.endTouch()
+
+          offScreenCanvas.let {
+            val c = it.save()
+            it.scale(width / currentViewport.width(), height / currentViewport.height())
+            model.strokes.last().draw(it)
+            it.restoreToCount(c)
+          }
           Log.d("DrawView touch event", "END")
           invalidate()
           return true
@@ -212,21 +235,13 @@ class PaperView(context: Context) : View(context) {
   override fun computeScroll() {
     super.computeScroll()
 
-    if (updateViewport()) {
-      ViewCompat.postInvalidateOnAnimation(this)
-    }
-    Log.d(TAG, "$currentViewport")
-  }
-
-  private fun updateViewport(): Boolean {
     if (scroller.computeScrollOffset()) {
       computeScrollSurfaceSize(surfaceSizeBuffer)
       val x = paperFrame.left + paperFrame.width() * scroller.currX / surfaceSizeBuffer.x
       val y = paperFrame.top + paperFrame.height() * scroller.currY / surfaceSizeBuffer.y
       setCurrentViewport(x, y, currentViewport.width(), currentViewport.height())
-      return true
+      ViewCompat.postInvalidateOnAnimation(this)
     }
-    return false
   }
 
   private fun computeScrollSurfaceSize(out: Point) {
@@ -251,6 +266,19 @@ class PaperView(context: Context) : View(context) {
 
     currentViewport.set(nx, ny, nx + width, ny + height)
     ViewCompat.postInvalidateOnAnimation(this)
+  }
+
+  private fun setOffscreenCanvasSize(w: Int, h: Int) {
+    offScreenBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+    offScreenCanvas = Canvas(offScreenBitmap)
+    offScreenCanvas.let {
+      val c = it.save()
+      it.scale(width / currentViewport.width(), height / currentViewport.height())
+      for (stroke in model.strokes) {
+        stroke.draw(it)
+      }
+      it.restoreToCount(c)
+    }
   }
 
   private fun screenXToPaperX(screenX: Float) =
