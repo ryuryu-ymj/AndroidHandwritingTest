@@ -4,9 +4,8 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
-import android.util.Log
 
-data class Point(val x: Float, val y: Float, val radius: Float)
+private data class Point(val x: Float, val y: Float, val radius: Float)
 
 class Stroke {
   private val points = mutableListOf<Point>()
