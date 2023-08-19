@@ -5,21 +5,21 @@ import io.github.ryuryu_ymj.handwritingtest.smoother.DampedSmoother
 import io.github.ryuryu_ymj.handwritingtest.smoother.TouchSmoother
 
 class PaperViewModel : ViewModel() {
-  val pen = Pen()
+  private val pen = Pen()
   private val smoother: TouchSmoother = DampedSmoother()
   val strokes = mutableListOf<Stroke>()
 
-  fun beginTouch(x: Float, y: Float, pressure: Float, time: Long) {
-    smoother.beginTouch(pen, x, y, pressure, time)
+  fun onStylusDown(x: Float, y: Float, pressure: Float, time: Long) {
+    val stroke = Stroke()
+    strokes.add(stroke)
+    smoother.beginStroke(stroke, x, y, pressure, time, pen)
   }
 
-  fun moveTouch(x: Float, y: Float, pressure: Float, time: Long) {
-    smoother.moveTouch(pen, x, y, pressure, time)
+  fun onStylusMove(x: Float, y: Float, pressure: Float, time: Long) {
+    smoother.extendStroke(strokes.last(), x, y, pressure, time, pen)
   }
 
-  fun endTouch() {
-    smoother.endTouch(pen)
-    pen.lastStroke?.let { strokes.add(it) }
-    pen.end()
+  fun onStylusEnd() {
+    smoother.endStroke(strokes.last(), pen)
   }
 }

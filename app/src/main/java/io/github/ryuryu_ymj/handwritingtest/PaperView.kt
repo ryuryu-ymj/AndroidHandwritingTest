@@ -2,7 +2,6 @@ package io.github.ryuryu_ymj.handwritingtest
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -19,9 +18,6 @@ import androidx.core.view.ViewCompat
 
 class PaperView(context: Context) : View(context) {
   private lateinit var model: PaperViewModel
-  lateinit var offScreenBitmap: Bitmap
-    private set
-  private lateinit var offScreenCanvas: Canvas
 
   private val paint =
       Paint().apply {
@@ -124,13 +120,6 @@ class PaperView(context: Context) : View(context) {
           lastSpan = span
           return true
         }
-
-        override fun onScaleEnd(detector: ScaleGestureDetector) {
-          val w = (paperFrame.width() / currentViewport.width() * width).toInt()
-          val h = (paperFrame.height() / currentViewport.height() * height).toInt()
-          setOffscreenCanvasSize(w, h)
-          ViewCompat.postInvalidateOnAnimation(this@PaperView)
-        }
       }
   private val scaleGestureDetector = ScaleGestureDetector(context, scalaGestureListener)
 
@@ -151,9 +140,6 @@ class PaperView(context: Context) : View(context) {
           currentViewport.top + currentViewport.height() * h / oldh,
       )
     }
-    setOffscreenCanvasSize(
-        (paperFrame.width() / currentViewport.width() * w).toInt(),
-        (paperFrame.height() / currentViewport.height() * h).toInt())
   }
 
   override fun onDraw(canvas: Canvas) {
@@ -167,9 +153,8 @@ class PaperView(context: Context) : View(context) {
     canvas.scale(width / currentViewport.width(), height / currentViewport.height())
     canvas.translate(-currentViewport.left, -currentViewport.top)
 
-    canvas.drawBitmap(offScreenBitmap, null, paperFrame, null)
-    model.pen.draw(canvas)
     canvas.drawRect(paperFrame, paint)
+    model.strokes.forEach { it.draw(canvas) }
 
     canvas.restoreToCount(c)
   }
@@ -180,7 +165,7 @@ class PaperView(context: Context) : View(context) {
     if (event.getToolType(event.actionIndex) == MotionEvent.TOOL_TYPE_STYLUS) {
       when (event.actionMasked) {
         MotionEvent.ACTION_DOWN -> {
-          model.beginTouch(
+          model.onStylusDown(
               screenXToPaperX(event.x), screenYToPaperY(event.y), event.pressure, event.eventTime)
           Log.d(
               "DrawView touch event",
@@ -190,7 +175,7 @@ class PaperView(context: Context) : View(context) {
         }
         MotionEvent.ACTION_MOVE -> {
           for (i in 0 until event.historySize) {
-            model.moveTouch(
+            model.onStylusMove(
                 screenXToPaperX(event.getHistoricalX(i)),
                 screenYToPaperY(event.getHistoricalY(i)),
                 event.getHistoricalPressure(i),
@@ -211,14 +196,7 @@ class PaperView(context: Context) : View(context) {
         }
         MotionEvent.ACTION_CANCEL,
         MotionEvent.ACTION_UP -> {
-          model.endTouch()
-
-          offScreenCanvas.let {
-            val c = it.save()
-            it.scale(width / currentViewport.width(), height / currentViewport.height())
-            model.strokes.last().draw(it)
-            it.restoreToCount(c)
-          }
+          model.onStylusEnd()
           Log.d("DrawView touch event", "END")
           invalidate()
           return true
@@ -266,19 +244,6 @@ class PaperView(context: Context) : View(context) {
 
     currentViewport.set(nx, ny, nx + width, ny + height)
     ViewCompat.postInvalidateOnAnimation(this)
-  }
-
-  private fun setOffscreenCanvasSize(w: Int, h: Int) {
-    offScreenBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-    offScreenCanvas = Canvas(offScreenBitmap)
-    offScreenCanvas.let {
-      val c = it.save()
-      it.scale(width / currentViewport.width(), height / currentViewport.height())
-      for (stroke in model.strokes) {
-        stroke.draw(it)
-      }
-      it.restoreToCount(c)
-    }
   }
 
   private fun screenXToPaperX(screenX: Float) =

@@ -1,6 +1,7 @@
 package io.github.ryuryu_ymj.handwritingtest.smoother
 
 import io.github.ryuryu_ymj.handwritingtest.Pen
+import io.github.ryuryu_ymj.handwritingtest.Stroke
 import kotlin.math.hypot
 import kotlin.math.min
 
@@ -17,7 +18,14 @@ class DampedSmoother : TouchSmoother {
   private var time = 0L
   private val error = 0.1f
 
-  override fun beginTouch(pen: Pen, x: Float, y: Float, pressure: Float, time: Long) {
+  override fun beginStroke(
+      stroke: Stroke,
+      x: Float,
+      y: Float,
+      pressure: Float,
+      time: Long,
+      pen: Pen
+  ) {
     touchX = x
     touchY = y
     nibPressure = pressure
@@ -26,10 +34,17 @@ class DampedSmoother : TouchSmoother {
     nibDX = 0f
     nibDY = 0f
     this.time = time
-    pen.begin(x, y, nibPressure)
+    pen.begin(stroke, x, y, nibPressure)
   }
 
-  override fun moveTouch(pen: Pen, x: Float, y: Float, pressure: Float, time: Long) {
+  override fun extendStroke(
+      stroke: Stroke,
+      x: Float,
+      y: Float,
+      pressure: Float,
+      time: Long,
+      pen: Pen
+  ) {
     val w1 = 0.5f
     val duration = time - this.time
     val newTouchDX = (x - touchX) / duration
@@ -45,10 +60,10 @@ class DampedSmoother : TouchSmoother {
     val w2 = 0.2f
     nibPressure = nibPressure * (1 - w2) + pressure * w2
 
-    pen.move(nibX, nibY, nibPressure)
+    pen.move(stroke, nibX, nibY, nibPressure)
   }
 
-  override fun endTouch(pen: Pen) {
+  override fun endStroke(stroke: Stroke, pen: Pen) {
     var move = hypot(nibX - touchX, nibY - touchY)
     val dt = 4
     while (move > error) {
@@ -57,8 +72,10 @@ class DampedSmoother : TouchSmoother {
       moveNibPhysically(dt)
       move -= hypot(nibDX * dt, nibDY * dt)
 
-      pen.move(nibX, nibY, nibPressure)
+      pen.move(stroke, nibX, nibY, nibPressure)
     }
+
+    pen.end(stroke)
   }
 
   private fun moveNibPhysically(duration: Int) {
